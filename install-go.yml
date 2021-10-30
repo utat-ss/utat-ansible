@@ -1,0 +1,22 @@
+---
+- hosts: sandbox
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: Get go
+      unarchive:
+        src: https://golang.org/dl/go1.17.1.linux-amd64.tar.gz
+        dest: /usr/local
+        remote_src: yes
+
+    - name: Add go to path
+      lineinfile:
+        path: /etc/profile
+        line: "export PATH=$PATH:/usr/local/go/bin"
+        state: present
+
+    - name: Install go-dep
+      apt:
+        name: go-dep
+        state: present
+        update-cache: yes

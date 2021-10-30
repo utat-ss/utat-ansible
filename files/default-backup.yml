@@ -1,0 +1,9 @@
+---
+- backup_dirs:
+    - homedir:
+      src: ~/
+      dest: home
+
+    - data:
+      src: /data/
+      dest: data

@@ -1,0 +1,76 @@
+---
+# Installs duplicacy stuff as ROOT!!!
+- hosts: sandbox
+  become: yes
+  gather_facts: yes
+  vars:
+    - backup_location: "gcd://testing-dir"
+    - gcd_key: "./key.json"
+    - backup_dirs:
+      - name: homedir
+        src: ~/
+        dest: home
+  tasks:
+    - debug: 
+        var: backup_dirs
+
+    - name: Create duplicacy directory
+      file:
+        path: ~/duplicacy
+        state: directory
+
+    - name: Copy README
+      copy:
+        src: files/README_duplicacy.md
+        dest: ~/duplicacy/README.md
+
+    - name: Copy GCD key
+      copy:
+        src: "{{ gcd_key }}"
+        dest: ~/duplicacy/key.json
+        mode: u=r,go=
+
+    - name: Copy backup script
+      copy:
+        src: files/duplicacy-backup.sh
+        dest: /usr/local/bin/duplicacy-cron.sh
+        mode: a+x
+      become: yes
+
+    # This is useful for more limited setups
+    # - name: Symlink directories to backup
+    #   file:
+    #     src: "{{ item.src }}"
+    #     dest: "~/duplicacy/{{ item.dest }}"
+    #     state: link
+    #   with_items:
+    #     - "{{ backup_dirs }}"
+
+    - name: Initialize backup repo
+      command: 
+        cmd: "duplicacy init {{ ansible_hostname }} {{ backup_location }} -repository /"
+        chdir: ~/duplicacy
+        stdin: "./key.json\n"
+
+    - name: Make key persistant
+      command:
+        cmd: "duplicacy set -key gcd_token -value ./key.json"
+        chdir: ~/duplicacy
+
+    - name: Install filters
+      copy:
+        src: files/duplicacy_filters
+        dest: ~/duplicacy/.duplicacy/filters
+
+    - name: Install crontab
+      cron:
+        name: "Create duplicacy backup"
+        minute: 0
+        hour: 4
+        job: "/usr/local/bin/duplicacy-cron.sh > /tmp/duplicacy-backup.log 2>&1"
+      become: yes
+
+    - name: Run first backup
+      command:
+        cmd: "duplicacy backup"
+        chdir: ~/duplicacy

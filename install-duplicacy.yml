@@ -1,0 +1,46 @@
+---
+- hosts: sandbox
+  become: no
+  gather_facts: yes
+  vars:
+    - working_dir: "{{ ansible_env.HOME }}/go-duplicacy"
+    - go_location: "/usr/local/go/bin/go"
+  environment:
+    GO111MODULE: "off"
+    GOPATH: '/{{ working_dir }}'
+  tasks:
+    # Since the current build of Duplicacy does not have an important gdrive feature
+    #  we must build from source. But it's not maintained well, so that's tricky
+    # Sauce:  https://github.com/gilbertchen/duplicacy/issues/618
+    #         https://github.com/gilbertchen/duplicacy/wiki/Installation
+    #         https://stackoverflow.com/questions/66284870/go-get-not-downloading-to-src-folder
+
+    # This will fail, but this is intentional.
+    - command: echo $PATH
+    - name: Install duplicacy
+      command: "{{ go_location }} get -v github.com/gilbertchen/duplicacy/..."
+      ignore_errors: yes
+      no_log: yes
+
+    - name: Update duplicacy deps
+      command: 
+        cmd: dep ensure -add github.com/ncw/swift@v1.0.53
+        chdir: "{{ working_dir }}/src/github.com/gilbertchen/duplicacy" 
+      ignore_errors: yes
+
+    - name: Build duplicacy
+      command: "{{ go_location }} install github.com/gilbertchen/duplicacy/duplicacy"
+
+    - name: Install duplicacy, for real
+      copy:
+        remote_src: true
+        src: "{{ working_dir }}/bin/duplicacy"
+        dest: /usr/local/bin/duplicacy
+        mode: a+x
+      become: yes
+
+    - name: Remove working directory
+      file:
+        path: "{{ working_dir}}"
+        state: absent
+

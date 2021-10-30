@@ -1,0 +1,22 @@
+# Specific excludes
+# Exclude dirs named cache
+e:(?i).*cache/.*$
+# Exclude trash dir
+e:\.Trash/.*$
+
+# Folder level filters
+-etc/fstab
++etc/*
++home/*
+-var/run/
+-var/cache/
+-var/tmp/
+-var/lock/
++var/*
++srv/*
++root/*
++opt/*
++usr/local/*
++usr/
++data/
+-*

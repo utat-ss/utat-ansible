@@ -72,5 +72,5 @@
 
     - name: Run first backup
       command:
-        cmd: "duplicacy backup"
+        cmd: "duplicacy backup -t ansible-init"
         chdir: ~/duplicacy

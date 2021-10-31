@@ -1,6 +1,6 @@
 #!/bin/bash
 # Duplicacy backup cron script
-# v0.1, Oct 6 2021, by Reid Sox-Harris
+# v0.1, Oct 30 2021, by Reid Sox-Harris
 
 PATH="/usr/local/bin:/usr/bin:/bin"
 

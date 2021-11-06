@@ -1,6 +1,6 @@
 ---
 # Installs duplicacy stuff as ROOT!!!
-- hosts: sandbox
+- hosts: utat
   become: yes
   gather_facts: yes
   vars_files: duplicacy-vars.yml

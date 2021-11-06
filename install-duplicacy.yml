@@ -1,5 +1,5 @@
 ---
-- hosts: sandbox
+- hosts: utat
   become: no
   gather_facts: yes
   vars:

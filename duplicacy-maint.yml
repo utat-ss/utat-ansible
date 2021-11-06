@@ -1,2 +1,21 @@
 ---
-# TODO!
+- hosts: sandbox 
+  become: yes
+  gather_facts: no
+  vars_files: duplicacy-vars.yml
+  tasks:
+    - name: Exhaustive prune
+      command:
+        cmd: duplicacy prune -exhaustive
+        chdir: ~/duplicacy
+
+    - name: Check integrity 
+      command:
+        cmd: duplicacy check -files
+        chdir: ~/duplicacy
+      register: check_results
+
+    - name: Ensure integrity passed
+      fail:
+        msg: Repository integrity is compromised!
+      when: check_results.stdout is search('Some chunks referenced by some snapshots do not exist in the storage')

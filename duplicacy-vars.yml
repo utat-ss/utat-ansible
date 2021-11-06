@@ -1,0 +1,15 @@
+---
+# Collection of vars that are used in all Duplicacy automations
+
+# Location of remote Duplicacy repo
+backup-location: "gcd://testing-dir"
+
+# Location of Google service account API key
+gcd_key: "./key.json"
+
+# Use for backing up specific dirs instead of everything with filters
+# Generally not reccomended for use, filters are much better
+backup_dirs:
+  - name: documents
+    src: ~/Documents
+    dest: docs

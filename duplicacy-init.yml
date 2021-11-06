@@ -3,17 +3,8 @@
 - hosts: sandbox
   become: yes
   gather_facts: yes
-  vars:
-    - backup_location: "gcd://testing-dir"
-    - gcd_key: "./key.json"
-    - backup_dirs:
-      - name: homedir
-        src: ~/
-        dest: home
+  vars_files: duplicacy-vars.yml
   tasks:
-    - debug: 
-        var: backup_dirs
-
     - name: Create duplicacy directory
       file:
         path: ~/duplicacy

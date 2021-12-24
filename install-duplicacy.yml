@@ -16,7 +16,6 @@
     #         https://stackoverflow.com/questions/66284870/go-get-not-downloading-to-src-folder
 
     # This will fail, but this is intentional.
-    - command: echo $PATH
     - name: Install duplicacy
       command: "{{ go_location }} get -v github.com/gilbertchen/duplicacy/..."
       ignore_errors: yes

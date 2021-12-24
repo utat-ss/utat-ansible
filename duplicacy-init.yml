@@ -38,8 +38,8 @@
     #     - "{{ backup_dirs }}"
 
     - name: Initialize backup repo
-      command: 
-        cmd: "duplicacy init {{ ansible_hostname }} {{ backup_location }} -repository /"
+      shell: 
+        cmd: "duplicacy init {{ ansible_hostname }} '{{ backup_location }}' -repository /"
         chdir: ~/duplicacy
         stdin: "./key.json\n"
 
@@ -61,7 +61,7 @@
         job: "/usr/local/bin/duplicacy-cron.sh > /tmp/duplicacy-backup.log 2>&1"
       become: yes
 
-    - name: Run first backup
-      command:
-        cmd: "duplicacy backup -t ansible-init"
-        chdir: ~/duplicacy
+    # - name: Run first backup
+    #   command:
+    #     cmd: "duplicacy backup -t ansible-init"
+    #     chdir: ~/duplicacy

@@ -1,0 +1,12 @@
+---
+# Updates the Duplicacy filter list to what's in this repo
+- hosts: utat
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: Replace filters
+      copy:
+        src: files/duplicacy_filters
+        dest: ~/duplicacy/.duplicacy/filters
+        force: yes
+        backup: yes

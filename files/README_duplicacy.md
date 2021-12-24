@@ -13,22 +13,27 @@ I highly recommend installing using [this](https://github.com/eosti/utat-ansible
 The Duplicacy initialization is also [automated](https://github.com/eosti/utat-ansible/blob/main/duplicacy-init.yml) with Ansible, for ease of deployment. 
 It will create this directory and README (hello!), and initialize Duplicacy with the root directory as its repository. 
 It will also add a basic filter list that aims to backup nearly all important files, while leaving out redundant system files. 
+Ideally this will minimize the number of unnecessary but keep in mind that **this is not a bare-metal backup**. 
+In the event of complete data loss, we need to install Ubuntu from scratch and then restore specific files from the backups. 
 
 Duplicacy must be run as root to access all of the system and user files to backup, so the Duplicacy settings and crontab are all installed for the root user. 
 The configuration files are located at `~root/duplicacy/`. 
 
 ## Backups
-Backups are scheduled daily at 4am, and will prune automatically to retain daily backups for a month, weekly backups for 180 days, and monthly backups past that.
-This is all done by the sudo crontab. 
+**Note: all `duplicacy` commands should be run in the configuration directory (`~root/duplicacy`), as the root user.**
 
-Manual backups can be executed by running the command `duplicacy backup` as root while in the configuration directory. 
+Backups are scheduled daily at 4am, and will prune automatically to retain daily backups for a month, weekly backups for 180 days, and monthly backups past that.
+This is all done by the root crontab. 
+
+Manual backups can be executed by running the command `duplicacy backup`. 
 
 ## Restoring
 To view all snapshots, use `duplicacy list`. 
 
 To restore to a specific snapshot, use `duplicacy restore -r <revision>`. 
 This will restore *all* files from that revision, but without overwriting existing files. 
-To overwrite existing files to do a complete rollback, use the `-overwrite` flag. 
+That means that deleted files will be restored, but existing files will not be reverted to their previous state.
+To do a complete rollback, use the `-overwrite` flag to, well, overwrite existing files to their previous state.  
 
 To restore specific files, add an [include/exclude list](https://github.com/gilbertchen/duplicacy/wiki/Include-Exclude-Patterns) after the command. 
 

@@ -1,0 +1,16 @@
+# Semi-complete docker-compose for the slack-export-viewer container
+# By Reid Sox-Harris, 08 October 2022
+
+version: '3'
+
+services:
+  slack:
+    container_name: slack-export-viewer
+    image: slack-export-viewer
+    volumes: 
+      - ./exports/:/app/exports
+    expose: 
+      - 8083
+    ports:
+      - 8083:8083
+    restart: unless-stopped

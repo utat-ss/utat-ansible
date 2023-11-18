@@ -1,0 +1,38 @@
+---
+- hosts: utat
+  become: yes
+  vars_files:
+    - ../vars/utat-vault
+  tasks:
+    - name: Clone repo
+      git:
+        repo: https://github.com/utat-ss/tree-visualizer/
+        version: main
+        clone: true
+        update: true 
+        dest: /srv/dockerfiles/tree-visualizer
+        force: true 
+
+    - name: Move env
+      copy:
+        src: /srv/dockerfiles/tree-visualizer/server/.env.example
+        dest: /srv/dockerfiles/tree-visualizer/server/.env
+        remote_src: true
+
+    - name: Add secret to env
+      lineinfile:
+        path: /srv/dockerfiles/tree-visualizer/server/.env
+        regexp: '^NOTION_TOKEN='
+        line: "NOTION_TOKEN={{ vault_notion_token }}"
+
+    - name: Modify docker-compose
+      copy:
+        src: files/treeviz-compose.yaml
+        dest: /srv/dockerfiles/tree-visualizer/docker-compose.yaml
+
+    - name: Start treeviz
+      docker_compose:
+        project_src: /srv/dockerfiles/tree-visualizer
+        state: present
+        build: true
+

@@ -1,0 +1,26 @@
+version: "3"
+
+networks:
+  nginx-external:
+    external: true
+
+services:
+  treeviz-server:
+    container_name: treeviz-server
+    build: server/
+    expose:
+      - 3000
+    restart: unless-stopped
+    networks:
+      - nginx-external
+
+  client:
+    container_name: treeviz
+    build: client/
+    expose:
+      - 4200
+    depends_on:
+      - treeviz-server
+    restart: unless-stopped
+    networks:
+      - nginx-external

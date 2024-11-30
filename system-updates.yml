@@ -1,0 +1,31 @@
+---
+- hosts: pritunl, utat
+  become: yes
+  tasks:
+    - name: Upgrade packages
+      ansible.builtin.apt:
+        upgrade: dist
+        update_cache: yes
+        autoremove: yes
+
+    - name: Check if a reboot is required
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+        get_checksum: no
+      register: reboot_required_file
+
+    - name: Reboot the server (if required)
+      ansible.builtin.reboot:
+      when: reboot_required_file.stat.exists == true
+
+    - name: Wait for it to come back
+      wait_for_connection:
+        timeout: 300
+
+- hosts: pritunl
+  become: yes
+  tasks:
+    - name: Update pritunl
+      include_role:
+        name: pritunl
+

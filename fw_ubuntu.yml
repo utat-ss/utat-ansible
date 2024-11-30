@@ -1,0 +1,38 @@
+# Note: first time run requires the -Kk flag for SSH auth
+---
+- hosts: utat_fw
+  become: 'yes'
+  vars_files:
+    - vars/default.yml
+  vars:
+    ssh_local_ip_range: 10.0.0.0/16
+  tasks:
+    - name: Set up SSH
+      include_role:
+        name: ssh-config
+      vars:
+        install_fail2ban: false
+        passwordless_sudo: false
+        force_keys: false
+
+    - name: Install packages
+      include_role:
+        name: default-packages
+      vars:
+        sys_packages: "{{ default_sys_packages + ['ufw', 'qemu-guest-agent', 'build-essential', 'at', 'git', 'ser2net', 'stlink-tools' ] }}"
+
+    # https://github.com/ansible/ansible/issues/18917#issuecomment-520254763
+    - name: Create FW user
+      user:
+        name: firmware
+        update_password: "on_create"
+        password: "{{ 'defaultpassword' | password_hash('sha512', 'mysecretsalt') }}"
+        groups: 'sudo'
+        append: true
+      register: fw_user_create
+
+    - name: Force reset password
+      command: "chage -d 0 firmware"
+      when: fw_user_create.changed
+
+

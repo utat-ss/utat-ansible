@@ -1,0 +1,21 @@
+---
+- hosts: heron_gnd
+  become: no
+  gather_facts: no
+  tasks:
+    - name: Copy TLEs
+      copy:
+        src: tles/
+        dest: /var/lib/heron/tles/
+
+    - name: Force telegraf poll
+      command: /usr/bin/telegraf --once
+      
+- hosts: heron_pi
+  become: no
+  gather_facts: no
+  tasks:
+    - name: Copy TLEs
+      copy:
+        src: tles/
+        dest: /var/lib/heron/tles/

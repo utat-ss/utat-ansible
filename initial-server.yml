@@ -1,0 +1,27 @@
+---
+- hosts: all
+  become: 'yes'
+  vars:
+    ssh_local_ip_range: 10.0.0.0/16
+  tasks:
+    - name: Set up SSH
+      include_role:
+        name: ssh-config
+      vars:
+        ssh_key_provider: "onepassword"
+        install_fail2ban: true
+        passwordless_sudo: true
+
+    - name: Install packages
+      include_role:
+        name: default-packages
+      vars:
+        additional_packages: 
+          - qemu-guest-agent
+
+    - name: Install docker-compose
+      include_role:
+        name: docker-compose
+      vars:
+        docker_users: "{{ ansible_user_id }}"
+

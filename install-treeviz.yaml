@@ -28,11 +28,12 @@
     - name: Modify docker-compose
       copy:
         src: files/treeviz-compose.yaml
-        dest: /srv/dockerfiles/tree-visualizer/docker-compose.yaml
+        dest: /srv/dockerfiles/tree-visualizer/docker-compose.yml
 
     - name: Start treeviz
       docker_compose:
         project_src: /srv/dockerfiles/tree-visualizer
         state: present
         build: true
+        remove_orphans: true
 

@@ -1,0 +1,64 @@
+---
+- hosts: auth
+  become: 'no'
+  vars:
+    authentik_docker_dir: "/home/{{ ansible_user_id }}/authentik"
+  tasks:
+    - name: Make auth folder
+      file:
+        path: "{{ authentik_docker_dir }}"
+        state: directory
+
+    - name: Get current Authentik dockerfile
+      get_url:
+        url: https://goauthentik.io/docker-compose.yml
+        dest: "{{ authentik_docker_dir }}/docker-compose.yml"
+        force: true
+
+    - name: Check if env file already exists
+      stat:
+        path: "{{ authentik_docker_dir }}/.env"
+      register: authentik_env
+
+    - name: Generate Postgres password
+      shell: |
+        echo "PG_PASS=$(openssl rand -base64 36 | tr -d '\n')" >> .env
+      args:
+        chdir: "{{ authentik_docker_dir }}"
+      when:
+        - not authentik_env.stat.exists
+
+    - name: Generate Authentik key
+      shell: |
+        echo "AUTHENTIK_SECRET_KEY=$(openssl rand -base64 60 | tr -d '\n')" >> .env
+      args:
+        chdir: "{{ authentik_docker_dir }}"
+      when:
+        - not authentik_env.stat.exists
+
+    - name: Authentik config
+      blockinfile:
+        path: "{{ authentik_docker_dir }}/.env"
+        block: |
+          # SMTP Host Emails are sent to
+          AUTHENTIK_EMAIL__HOST=10.0.7.58
+          AUTHENTIK_EMAIL__PORT=587
+          # Optionally authenticate (don't add quotation marks to your password)
+          AUTHENTIK_EMAIL__USERNAME=
+          AUTHENTIK_EMAIL__PASSWORD=
+          # Use StartTLS
+          AUTHENTIK_EMAIL__USE_TLS=false
+          # Use SSL
+          AUTHENTIK_EMAIL__USE_SSL=false
+          AUTHENTIK_EMAIL__TIMEOUT=10
+          # Email address authentik will send from, should have a correct @domain
+          AUTHENTIK_EMAIL__FROM=authentik@utat.space
+          COMPOSE_PORT_HTTP=80
+          COMPOSE_PORT_HTTPS=443
+          
+    - name: Start container
+      community.docker.docker_compose_v2:
+        project_src: "{{ authentik_docker_dir }}"
+        pull: always
+        state: present
+      become: yes

@@ -1,0 +1,35 @@
+--- 
+- hosts: utat_containers
+  become: no
+  gather_facts: yes
+  vars:
+    dockerfile_loc: "/srv/dockerfiles/slack-export-viewer" 
+    proxy_network_name: "nginx-external"
+  vars_prompt:
+    - name: export_loc
+      prompt: Location of Slack export
+      private: no
+  tasks:
+    - name: Copy Dockerfile
+      copy:
+        src: files/slack-export-viewer/Dockerfile
+        dest: "{{ dockerfile_loc }}"
+
+    - name: Copy docker compose file
+      template:
+        src: files/slack-export-viewer/docker-compose.j2
+        dest: "{{ dockerfile_loc }}/docker-compose.yml"
+
+    # May cause issues with multiple files in export dir, check logs
+    - name: Copy export
+      copy: 
+        src: "{{ export_loc }}"
+        dest: "{{ dockerfile_loc }}/exports/export.zip"
+        backup: true
+
+    # Is this fine when docker-compose doesn't change but export does?
+    - name: Build and start container
+      community.docker.docker_compose_v2:
+        project_src: "{{ dockerfile_loc }}"
+        state: present
+      become: yes
